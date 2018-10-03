@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": [ "dom", "es5", "es2015.promise" ],
+    "target": "es5",
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "pretty": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "alwaysStrict": true,
+    "strictNullChecks": true,
+  },
+  "exclude": [
+    "node_modules",
+    "library",
+    "local",
+    "temp",
+    "build",
+    "settings"
+  ]
+}
