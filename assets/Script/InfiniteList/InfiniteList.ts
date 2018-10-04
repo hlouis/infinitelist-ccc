@@ -1,3 +1,5 @@
+import InfiniteCell from "./InfiniteCell";
+
 const { ccclass, property } = cc._decorator;
 
 enum Direction {
@@ -10,11 +12,11 @@ interface GetCellNumber {
 }
 
 interface GetCellSize {
-	(dataIndex:number): number;
+	(dataIndex?:number): number;
 }
 
 interface GetCellView {
-	(dataIndex:number, cellIndex:number): cc.Node;
+	(dataIndex?:number, cellIndex?:number): InfiniteCell;
 }
 interface InitParam {
 	getCellNumber: GetCellNumber,
@@ -50,6 +52,8 @@ export default class InfiniteList extends cc.Component {
 	 * 调用 Refresh 是没有用处的，请调用 Reload
 	 */
 	public Refresh() {
+		this._clear();
+		this._load();
 	}
 
 	////////////////////////////////////////////////////////////
@@ -59,10 +63,7 @@ export default class InfiniteList extends cc.Component {
 	private _scrollView:cc.ScrollView;
 	private _content:cc.Node;
 	private _delegate:InitParam;
-
-	private _init(p:InitParam) {
-		this._delegate = p;
-	}
+	private _inited = false;
 
 	public onLoad() {
 		// setup scrollview component
@@ -89,5 +90,29 @@ export default class InfiniteList extends cc.Component {
 			layout.type = cc.Layout.Type.VERTICAL;
 			layout.spacingY = this.spacing;
 		}
+
+		// bind event to scrollview
+
+		// Everything OK, let's start
+		this._inited = true;
+		if (this._delegate) {
+			this._load();
+		}
+	}
+
+	private _init(p:InitParam) {
+		let needClear = false;
+		if (this._delegate) needClear = true;
+		this._delegate = p;
+		if (this._inited) {
+			if (needClear) this._clear();
+			this._load();
+		}
+	}
+
+	private _clear() {
+	}
+
+	private _load() {
 	}
 }
