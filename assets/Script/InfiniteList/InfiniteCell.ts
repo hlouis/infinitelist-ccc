@@ -16,11 +16,6 @@ export default abstract class InfiniteCell extends cc.Component {
 	public cellIdentifier:string;
 
 	/**
-	 * 表示这个 cell 在 list 中的顺序，这个值和数据的索引值无关
-	 */
-	public cellIndex:number;
-
-	/**
 	 * 表示这个 cell 使用的数据，在整个数据中的索引值
 	 */
 	public dataIndex:number;

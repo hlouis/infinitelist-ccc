@@ -27,6 +27,7 @@ export default class Main extends cc.Component {
         ilist.Init({
             getCellNumber: this._getCellNumber,
             getCellSize: this._getCellSize,
+            getCellIdentifer: this._getCellIdentifer,
             getCellView: this._getCellView,
         })
     }
@@ -45,5 +46,9 @@ export default class Main extends cc.Component {
     private _getCellView():MyCell {
         let node = new cc.Node();
         return node.addComponent(MyCell);
+    }
+
+    private _getCellIdentifer():string {
+        return "NormalCell";
     }
 }
