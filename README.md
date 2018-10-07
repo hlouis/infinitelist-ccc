@@ -32,3 +32,4 @@
 ## TODO
 
 1. More API to list (jump to cell, cell is visible, etc...)
+1. Fix all todo

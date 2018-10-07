@@ -32,7 +32,7 @@ interface GetCellSize {
 
 interface GetCellView {
 	/**
-	 * 获取一个 Cell 的 View 实例
+	 * 获取一个 Cell 的 View 实例，记住这个控件必须已经挂在一个存在的 Node 上
 	 * @param dataIndex: 当前 Cell 所渲染的数据在列表中的下标
 	 * @param identifier: 这个 Cell 的表现类型标志
 	 */
@@ -67,6 +67,9 @@ export default class InfiniteList extends cc.Component {
 
 	@property({tooltip: "List 底部（水平滚动则是最右边）的间隔空间"})
 	public bottomPadding = 0;
+
+	@property({tooltip: "侧边的间距，垂直滚动就是左右边的间距，水平滚动就是上下边的间距"})
+	public sidePadding:cc.Vec2 = new cc.Vec2(0, 0);
 
 	public Init(p:InitParam) {
 		this._init(p);
@@ -159,7 +162,7 @@ export default class InfiniteList extends cc.Component {
 		if (this.direction == Direction.vertical) {
 			this._scrollPosition = offset.y;
 		} else {
-			this._scrollPosition = offset.x;
+			this._scrollPosition = offset.x * -1;
 		}
 
 		// refresh active cell with new scroll position
@@ -306,13 +309,13 @@ export default class InfiniteList extends cc.Component {
 		this._activeCellViews.push(cell)
 		this._content.addChild(cell.node);
 		if (this.direction == Direction.vertical) {
-			cell.node.x = 0;
+			cell.node.x = this.sidePadding.x;
 			cell.node.y = (this._cellsOffset[cell.dataIndex] - this._cellsSize[cell.dataIndex]) * -1;
-			cell.node.setContentSize(this.node.width, this._cellsSize[dataIndex]);
+			cell.node.setContentSize(this.node.width - this.sidePadding.x - this.sidePadding.y, this._cellsSize[dataIndex]);
 		} else {
-			cell.node.x = (this._cellsOffset[cell.dataIndex] - this._cellsSize[cell.dataIndex]) * -1;
-			cell.node.y = 0;
-			cell.node.setContentSize(this._cellsSize[dataIndex], this.node.height);
+			cell.node.x = (this._cellsOffset[cell.dataIndex] - this._cellsSize[cell.dataIndex]);
+			cell.node.y = this.sidePadding.x * -1;
+			cell.node.setContentSize(this._cellsSize[dataIndex], this.node.height - this.sidePadding.x - this.sidePadding.y);
 		}
 
 		cell.dataIndex = dataIndex;

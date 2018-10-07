@@ -174,7 +174,12 @@
     "direction": 1,
     "spacing": 5,
     "headPadding": 3,
-    "bottomPadding": 10
+    "bottomPadding": 10,
+    "sidePadding": {
+      "__type__": "cc.Vec2",
+      "x": 8,
+      "y": 4
+    }
   },
   {
     "__type__": "cc.Mask",
