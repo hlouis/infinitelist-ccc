@@ -5,6 +5,8 @@ import InfiniteCell from "./InfiniteList/InfiniteCell";
 class MyCell extends InfiniteCell {
     public UpdateContent() {
         cc.log("Item update content for:", this.dataIndex);
+        let text = this.node.getChildByName("text").getComponent(cc.Label);
+        text.string = this.dataIndex.toString();
     }
 }
 
