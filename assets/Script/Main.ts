@@ -9,7 +9,7 @@ class MyCell extends InfiniteCell {
     }
 
     public UpdateContent() {
-        cc.log("Item update content for:", this.dataIndex, this.cellIndex);
+        cc.log("Item update content for:", this.dataIndex);
     }
 }
 
@@ -19,11 +19,15 @@ export default class Main extends cc.Component {
     @property({
         type: cc.Node,
     })
-    public listNode:cc.Node;
+    public listNode:cc.Node | null = null;
+
+    @property({type: cc.Node})
+    public cellNode:cc.Node | null = null;
     
     public onLoad() {
-        cc.log(this.listNode);
-        let ilist = this.listNode.getComponent(InfiniteList);
+        cc.log("listNode:", this.listNode);
+        cc.log("cellNode:", this.cellNode);
+        let ilist = this.listNode!.getComponent(InfiniteList);
         ilist.Init({
             getCellNumber: this._getCellNumber,
             getCellSize: this._getCellSize,
@@ -35,20 +39,20 @@ export default class Main extends cc.Component {
     public update() {
     }
 
-    private _getCellNumber():number {
-        return 1;
+    private _getCellNumber = ():number => {
+        return 10;
     }
 
-    private _getCellSize():number {
+    private _getCellSize = ():number => {
         return 100;
     }
 
-    private _getCellView():MyCell {
-        let node = new cc.Node();
-        return node.addComponent(MyCell);
+    private _getCellView = ():MyCell => {
+        let node = cc.instantiate(this.cellNode);
+        return node!.addComponent(MyCell);
     }
 
-    private _getCellIdentifer():string {
+    private _getCellIdentifer = ():string => {
         return "NormalCell";
     }
 }

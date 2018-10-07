@@ -13,7 +13,8 @@ export default abstract class InfiniteCell extends cc.Component {
 	 * cellIdentifier 是一个独特的字符串，用来表示这个 cell 使用的是哪种类型的资源，
 	 * 这样在同一个 scroll 中可以使用多种不同的 cell 类型
 	 */
-	public cellIdentifier:string;
+	@property
+	public cellIdentifier:string = "";
 
 	/**
 	 * 表示这个 cell 使用的数据，在整个数据中的索引值

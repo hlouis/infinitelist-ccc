@@ -65,6 +65,7 @@ export default class InfiniteList extends cc.Component {
 	// Implenmentions
 	////////////////////////////////////////////////////////////
 
+	private _debug = true;
 	private _scrollView:cc.ScrollView;
 	private _content:cc.Node;
 	private _delegate:InitParam;
@@ -72,8 +73,9 @@ export default class InfiniteList extends cc.Component {
 	private _scrollPosition = 0;
 	private _activeCellIndexRange:cc.Vec2;
 
-	private _cellsOffset:Array<number>;
-	private _activeCellViews:Array<InfiniteCell>;
+	private _cellsOffset:Array<number>;	// bottom side of cell position
+	private _cellsSize:Array<number>;
+	private _activeCellViews = new Array<InfiniteCell>();
 
 	public onLoad() {
 		// setup scrollview component
@@ -91,12 +93,27 @@ export default class InfiniteList extends cc.Component {
 
 		// setup content node(which is root of every cell)
 		this._content = new cc.Node();
+		this._content.setAnchorPoint(0, 1);
 		this.node.addChild(this._content);
+		this._scrollView.content = this._content;
+		if (this._debug) {
+			// set background color to content for debug use
+			this._content.addComponent(cc.Graphics);
+		}
 
 		// Everything OK, let's start
 		this._inited = true;
 		if (this._delegate) {
 			this._load();
+		}
+	}
+
+	public update() {
+		if (this._debug) {
+			let g = this._content.getComponent(cc.Graphics);
+			g.clear();
+			g.fillColor = cc.Color.YELLOW;
+			g.fillRect(0, 0, this._content.width, this._content.height);
 		}
 	}
 
@@ -133,17 +150,26 @@ export default class InfiniteList extends cc.Component {
 	}
 
 	private _clear() {
+		if (this._activeCellViews) {
+			while(this._activeCellViews.length > 0) {
+				this._recycleCell(this._activeCellViews.length - 1);
+			}
+		}
 	}
 
 	private _load() {
 		// get all cell offset with spacing and padding
 		const dataLen = this._delegate.getCellNumber();
+		if (dataLen <= 0) return;
+
 		let offset = 0;
 		this._cellsOffset = new Array<number>(dataLen);
+		this._cellsSize = new Array<number>(dataLen);
 		for (let i = 0; i < dataLen; i++) {
-			let o = this._delegate.getCellSize(i) + (i == 0 ? 0 : this.spacing);
-			this._cellsOffset.push(o);
-			offset += o;
+			let s = this._delegate.getCellSize(i)
+			this._cellsSize[i] = s;
+			offset = s + (i == 0 ? 0 : this.spacing) + offset;
+			this._cellsOffset[i] = offset;
 		}
 		if (this.direction == Direction.vertical) {
 			this._content.setContentSize(this.node.width, offset);
@@ -167,28 +193,42 @@ export default class InfiniteList extends cc.Component {
 
 		// recycle all out of range cell
 		let i = 0;
-		let needAddCells = new Array<number>();
 		while (i < this._activeCellViews.length) {
 			let cell = this._activeCellViews[i];
 			if (cell.dataIndex < range.x || cell.dataIndex > range.y) {
-				needAddCells.push(cell.dataIndex);
-				this._recycleCell(cell);
+				this._recycleCell(i);
+			} else {
+				i++;
 			}
 		}
 
 		// add any not exist cell
-		for (let i = 0; i < needAddCells.length; i++) {
-			this._addCellView(needAddCells[i]);
+		// !TODO: boost this part effecient
+		for (let i = range.x; i <= range.y; i++) {
+			let needadd = true;
+			for (let j = 0; j < this._activeCellViews.length; j++) {
+				if (this._activeCellViews[j].dataIndex == i) {
+					needadd = false;
+					break;
+				}
+			}
+
+			if (needadd) this._addCellView(i);
 		}
 
 		// update current active cell range
 		this._activeCellIndexRange = range;
 	}
 
-	private _recycleCell(cell:InfiniteCell) {
-		// TODO: need store this cell in node pool
+	/**
+	 * remove one active cell from _activeCellViews array
+	 * @param cellIndex index of active cell views array
+	 */
+	private _recycleCell(cellIndex:number) {
+		// !TODO: need store this cell in node pool
+		let cell = this._activeCellViews[cellIndex];
+		this._activeCellViews.splice(cellIndex, 1);
 		cell.node.removeFromParent(false);
-		return;
 	}
 
 	/**
@@ -201,11 +241,9 @@ export default class InfiniteList extends cc.Component {
 	}
 
 	private _getCellIndexOfPos(pos:number): number {
-		// TODO: boost this function speed by using binary search
-		let offset = 0;
+		// !TODO: boost this function speed by using binary search
 		for (let i = 0; i < this._cellsOffset.length; i++) {
-			if (offset >= pos) return i;
-			offset += this._cellsOffset[i];
+			if (this._cellsOffset[i] >= pos) return i;
 		}
 		return this._cellsOffset.length - 1;
 	}
@@ -219,16 +257,24 @@ export default class InfiniteList extends cc.Component {
 		let cell = this._getCellViewFromPool(id);
 		if (!cell) {
 			cell = this._delegate.getCellView(dataIndex);
+			cell.node.setAnchorPoint(0, 1);
 		}
 
+		cell.dataIndex = dataIndex;
+		cell.enabled = true;
 		this._activeCellViews.push(cell)
 		this._content.addChild(cell.node);
 		if (this.direction == Direction.vertical) {
 			cell.node.x = 0;
-			cell.node.y = this._cellsOffset[cell.dataIndex];
+			cell.node.y = (this._cellsOffset[cell.dataIndex] - this._cellsSize[cell.dataIndex]) * -1;
+			cell.node.setContentSize(this.node.width, this._cellsSize[dataIndex]);
 		} else {
-			cell.node.x = this._cellsOffset[cell.dataIndex];
+			cell.node.x = (this._cellsOffset[cell.dataIndex] - this._cellsSize[cell.dataIndex]) * -1;
 			cell.node.y = 0;
+			cell.node.setContentSize(this._cellsSize[dataIndex], this.node.height);
 		}
+
+		cell.dataIndex = dataIndex;
+		cell.UpdateContent();
 	}
 }
