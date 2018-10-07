@@ -41,11 +41,21 @@ interface GetCellView {
 	 */
 	(dataIndex?:number, identifier?:string): InfiniteCell;
 }
+
+interface GetCellData {
+	/**
+	 * 根据一个 Cell 的下标获取一个 Cell 的数据，这个数据会作为 Cell 的 UpdateContent 的参数
+	 * 这个回调是可选的，可以不提供，如果不提供的话，Cell 需要自己在 UpdateContent 中向其他模块获取更新自己内容的数据
+	 */
+	(dataIndex?:number): any;
+}
+
 interface InitParam {
 	getCellNumber: GetCellNumber,
 	getCellSize: GetCellSize,
 	getCellIdentifer: GetCellIdentifer,
 	getCellView: GetCellView,
+	getCellData?: GetCellData,
 }
 
 interface CellPools {
@@ -81,8 +91,8 @@ export default class InfiniteList extends cc.Component {
 	/**
 	 * Reload 整个 List，这时获取数据的回调函数会重新触发一遍，所有的 cell 也会更新一遍内容
 	 */
-	public Reload() {
-		this._clear();
+	public Reload(keepPos:boolean = false) {
+		this._clear(keepPos);
 		this._load();
 	}
 
@@ -134,6 +144,7 @@ export default class InfiniteList extends cc.Component {
 	private _content:cc.Node;
 	private _delegate:InitParam;
 	private _inited = false;
+
 	private _scrollPosition = 0;
 	private _activeCellIndexRange:cc.Vec2;
 	private _cellPools:CellPools = {};
@@ -214,11 +225,18 @@ export default class InfiniteList extends cc.Component {
 		}
 	}
 
-	private _clear() {
+	private _clear(keepPos:boolean = false) {
 		if (this._activeCellViews) {
 			while(this._activeCellViews.length > 0) {
 				this._recycleCell(this._activeCellViews.length - 1);
 			}
+		}
+
+		this._activeCellIndexRange = new cc.Vec2(-1, -1);
+		if (!keepPos) {
+			this._scrollPosition = 0;
+			this._content.x = 0;
+			this._content.y = 0;
 		}
 	}
 
@@ -362,12 +380,21 @@ export default class InfiniteList extends cc.Component {
 		}
 
 		cell.dataIndex = dataIndex;
-		cell.UpdateContent();
+		this._updateCellContent(cell);
 	}
 
 	private _updateActiveCellContent() {
 		this._activeCellViews.forEach(cell => {
-			cell.UpdateContent();
+			this._updateCellContent(cell);
 		});
+	}
+
+	private _updateCellContent(cell:InfiniteCell) {
+		let data = null
+		if (this._delegate.getCellData) {
+			data = this._delegate.getCellData(cell.dataIndex);
+		}
+
+		cell.UpdateContent(data);
 	}
 }

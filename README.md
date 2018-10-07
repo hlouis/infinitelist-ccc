@@ -31,6 +31,4 @@
 
 ## TODO
 
-1. More API to list (jump to cell, cell is visible, etc...)
-1. Add all function test in example
 1. Fix all todo
