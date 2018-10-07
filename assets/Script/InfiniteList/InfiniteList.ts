@@ -45,6 +45,10 @@ interface InitParam {
 	getCellView: GetCellView,
 }
 
+interface CellPools {
+	[index:string]: cc.NodePool;
+}
+
 @ccclass
 export default class InfiniteList extends cc.Component {
 	@property({
@@ -94,6 +98,7 @@ export default class InfiniteList extends cc.Component {
 	private _inited = false;
 	private _scrollPosition = 0;
 	private _activeCellIndexRange:cc.Vec2;
+	private _cellPools:CellPools = {};
 
 	private _cellsOffset:Array<number>;	// bottom side of cell position
 	private _cellsSize:Array<number>;
@@ -253,6 +258,21 @@ export default class InfiniteList extends cc.Component {
 		let cell = this._activeCellViews[cellIndex];
 		this._activeCellViews.splice(cellIndex, 1);
 		cell.node.removeFromParent(false);
+		cell.dataIndex = -1;
+
+		if (!this._cellPools[cell.cellIdentifier]) {
+			this._cellPools[cell.cellIdentifier] = new cc.NodePool();
+		}
+		let pool = this._cellPools[cell.cellIdentifier];
+		pool.put(cell.node);
+	}
+
+	private _getCellViewFromPool(id:string): InfiniteCell | null {
+		if (!this._cellPools[id]) return null;
+		let pool = this._cellPools[id];
+		let cellNode = pool.get();
+		if (!cellNode) return null;
+		return cellNode.getComponent(InfiniteCell);
 	}
 
 	/**
@@ -270,10 +290,6 @@ export default class InfiniteList extends cc.Component {
 			if (this._cellsOffset[i] >= pos) return i;
 		}
 		return this._cellsOffset.length - 1;
-	}
-
-	private _getCellViewFromPool(id:string): InfiniteCell | null {
-		return null;
 	}
 
 	private _addCellView(dataIndex:number) {

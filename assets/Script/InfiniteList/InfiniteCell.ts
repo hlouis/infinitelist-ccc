@@ -19,7 +19,7 @@ export default abstract class InfiniteCell extends cc.Component {
 	/**
 	 * 表示这个 cell 使用的数据，在整个数据中的索引值
 	 */
-	public dataIndex:number;
+	public dataIndex:number = -1;
 
 	/**
 	 * 使用这个函数来更新当前的 Cell 内容

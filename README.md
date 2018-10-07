@@ -28,3 +28,7 @@
 1. 继承 InfiniteCell 类，并实现 UpdateContent 函数，这个函数用来更新当前 Cell 的表现。 需要注意的是，如果在 UpdateContent 中使用了异步函数获得结果来更新这个 Cell 时 很有可能返回时，当前的 Cell 已经不再用来显示之前的数据了，所以这时需要在函数中使用一个本地变量记录当前的 dataIndex 并在回调函数返回时比较这两个值是否一致。
 1. 在适当的时候初始化 InfiniteList 的实例，需要调用 Init 函数，这个函数中需要传递四个回调，具体使用方式参考 Interface 的注释
 1. 使用 `InfiniteList.Load` 函数触发数据的载入
+
+## TODO
+
+1. More API to list (jump to cell, cell is visible, etc...)
