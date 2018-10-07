@@ -42,6 +42,12 @@ export default class InfiniteList extends cc.Component {
 	})
 	public spacing = 0;
 
+	@property({tooltip: "List 顶部（水平滚动则是最左边）的间隔空间"})
+	public headPadding = 0;
+
+	@property({tooltip: "List 底部（水平滚动则是最右边）的间隔空间"})
+	public bottomPadding = 0;
+
 	public Init(p:InitParam) {
 		this._init(p);
 	}
@@ -162,7 +168,7 @@ export default class InfiniteList extends cc.Component {
 		const dataLen = this._delegate.getCellNumber();
 		if (dataLen <= 0) return;
 
-		let offset = 0;
+		let offset = this.headPadding;
 		this._cellsOffset = new Array<number>(dataLen);
 		this._cellsSize = new Array<number>(dataLen);
 		for (let i = 0; i < dataLen; i++) {
@@ -171,6 +177,8 @@ export default class InfiniteList extends cc.Component {
 			offset = s + (i == 0 ? 0 : this.spacing) + offset;
 			this._cellsOffset[i] = offset;
 		}
+		offset += this.bottomPadding;
+
 		if (this.direction == Direction.vertical) {
 			this._content.setContentSize(this.node.width, offset);
 		} else {
