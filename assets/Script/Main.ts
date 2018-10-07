@@ -3,11 +3,6 @@ import InfiniteList from "./InfiniteList/InfiniteList";
 import InfiniteCell from "./InfiniteList/InfiniteCell";
 
 class MyCell extends InfiniteCell {
-    constructor() {
-        super();
-        this.cellIdentifier = "NormalCell";
-    }
-
     public UpdateContent() {
         cc.log("Item update content for:", this.dataIndex);
     }
@@ -43,8 +38,9 @@ export default class Main extends cc.Component {
         return 10;
     }
 
-    private _getCellSize = ():number => {
-        return 100;
+    private _getCellSize = (index:number):number => {
+        if (index % 2 == 0) return 50;
+        else return 100;
     }
 
     private _getCellView = ():MyCell => {

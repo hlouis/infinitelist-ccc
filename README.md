@@ -12,11 +12,19 @@
 
 ## 使用说明
 
+首先复制 `Script/InfiniteList` 目录到你的项目中，然后：
+
 ### 编辑器方面的准备
 
-1. 创建一个空的 Node，并将其 Anchor 设置为 0，1
+1. 创建一个空的 Node 作为 List，并将其 Anchor 设置为 0，1
 1. 在 Node 上添加 InfinitList 控件，并设置其相关的属性（所有属性都有中文 Tips，通过鼠标悬停可以观看说明）
 1. 如果需要这个 List 有 Mask 的功能，可以在这个 Node 上添加 Mask 组件
-1. 创建独立的 Prefab 作为
+1. 创建独立的 Prefab 或者场景上的 Node 作为 Cell 的模板
+1. 如果一个 List 中需要多种 Cell 类型（例如顶部和底部需要特殊的 Cell）可以重复上一步
+1. 所有的 Cell 模板均要将自己的 Anchor 设置为 0，1
 
 ### 代码方面的准备
+
+1. 继承 InfiniteCell 类，并实现 UpdateContent 函数，这个函数用来更新当前 Cell 的表现。 需要注意的是，如果在 UpdateContent 中使用了异步函数获得结果来更新这个 Cell 时 很有可能返回时，当前的 Cell 已经不再用来显示之前的数据了，所以这时需要在函数中使用一个本地变量记录当前的 dataIndex 并在回调函数返回时比较这两个值是否一致。
+1. 在适当的时候初始化 InfiniteList 的实例，需要调用 Init 函数，这个函数中需要传递四个回调，具体使用方式参考 Interface 的注释
+1. 使用 `InfiniteList.Load` 函数触发数据的载入

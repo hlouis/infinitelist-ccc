@@ -8,19 +8,35 @@ enum Direction {
 }
 
 interface GetCellNumber {
+	/**
+	 * 返回这个 List 中数据的总数量
+	 */
 	(): number;
 }
 
 interface GetCellIdentifer {
+	/**
+	 * 通过数据的下标返回这个 Cell 的表现类型的标志
+	 * @param dataIndex: 当前 Cell 所渲染的数据在列表中的下标
+	 */
 	(dataIndex?:number): string;
 }
 
 interface GetCellSize {
+	/**
+	 * 通过数据的下标返回这个 Cell 的尺寸（垂直 List 为高度，水平 List 为宽度）
+	 * @param dataIndex: 当前 Cell 所渲染的数据在列表中的下标
+	 */
 	(dataIndex?:number): number;
 }
 
 interface GetCellView {
-	(dataIndex?:number): InfiniteCell;
+	/**
+	 * 获取一个 Cell 的 View 实例
+	 * @param dataIndex: 当前 Cell 所渲染的数据在列表中的下标
+	 * @param identifier: 这个 Cell 的表现类型标志
+	 */
+	(dataIndex?:number, identifier?:string): InfiniteCell;
 }
 interface InitParam {
 	getCellNumber: GetCellNumber,
@@ -266,6 +282,7 @@ export default class InfiniteList extends cc.Component {
 		if (!cell) {
 			cell = this._delegate.getCellView(dataIndex);
 			cell.node.setAnchorPoint(0, 1);
+			cell.cellIdentifier = id;
 		}
 
 		cell.dataIndex = dataIndex;
