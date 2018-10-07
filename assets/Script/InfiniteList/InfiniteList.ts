@@ -35,6 +35,9 @@ interface GetCellView {
 	 * 获取一个 Cell 的 View 实例，记住这个控件必须已经挂在一个存在的 Node 上
 	 * @param dataIndex: 当前 Cell 所渲染的数据在列表中的下标
 	 * @param identifier: 这个 Cell 的表现类型标志
+	 * 
+	 * 这个回调函数只会出现在已经没有可以重用的 Cell 时，List 才会向这个函数请求新的 Cell 实例
+	 * 所有已经请求的 Cell 实例都会被重复利用。
 	 */
 	(dataIndex?:number, identifier?:string): InfiniteCell;
 }
@@ -79,15 +82,47 @@ export default class InfiniteList extends cc.Component {
 	 * Reload 整个 List，这时获取数据的回调函数会重新触发一遍，所有的 cell 也会更新一遍内容
 	 */
 	public Reload() {
+		this._clear();
+		this._load();
 	}
 
 	/**
-	 * 重新刷新当前显示 cell 的内容，不会重新载入整个列表，所以如果列表的数据数量发生了变化，
-	 * 调用 Refresh 是没有用处的，请调用 Reload
+	 * 重新刷新当前显示 cell 的内容，不会重新载入整个列表
+	 * 所以如果列表的数据数量发生了变化，或是想要修改 Cell 的尺寸，调用 Refresh 是没有用处的，请调用 Reload
 	 */
 	public Refresh() {
-		this._clear();
-		this._load();
+		this._updateActiveCellContent();
+	}
+
+	/**
+	 * 返回相对于 ScrollView 的这个 Cell 的滚动坐标
+	 * @param idx Cell 的索引下标
+	 */
+	public GetScrollPosOfCell(idx:number): cc.Vec2 {
+		let sp = this._getCellPosOfIndex(idx);
+		if (this.direction == Direction.vertical) {
+			return new cc.Vec2(0, sp);
+		} else {
+			return new cc.Vec2(sp * -1, 0);
+		}
+	}
+
+	/**
+	 * 在规定的时间里滚动到指定的 Cell
+	 * @param idx 目标的 Cell 的下标
+	 */
+	public ScrollToCell(idx:number, timeInSecond:number = 1, attenuated:boolean = true) {
+		let pos = this.GetScrollPosOfCell(idx);
+		this._scrollView.scrollTo(pos, timeInSecond, attenuated);
+	}
+
+	/**
+	 * 查看一个 Cell 是否当前可见
+	 * @param idx Cell 的下标
+	 */
+	public IsCellVisible(idx:number): boolean {
+		if (idx >= this._activeCellIndexRange.x && idx <= this._activeCellIndexRange.y) return true;
+		else return false;
 	}
 
 	////////////////////////////////////////////////////////////
@@ -295,6 +330,14 @@ export default class InfiniteList extends cc.Component {
 		return this._cellsOffset.length - 1;
 	}
 
+	/**
+	 * Get cell top position by its index
+	 * @param idx Cell index
+	 */
+	private _getCellPosOfIndex(idx:number): number {
+		return this._cellsOffset[idx] - this._cellsSize[idx];
+	}
+
 	private _addCellView(dataIndex:number) {
 		let id = this._delegate.getCellIdentifer(dataIndex);
 		let cell = this._getCellViewFromPool(id);
@@ -320,5 +363,11 @@ export default class InfiniteList extends cc.Component {
 
 		cell.dataIndex = dataIndex;
 		cell.UpdateContent();
+	}
+
+	private _updateActiveCellContent() {
+		this._activeCellViews.forEach(cell => {
+			cell.UpdateContent();
+		});
 	}
 }
