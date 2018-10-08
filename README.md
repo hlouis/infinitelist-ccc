@@ -32,3 +32,4 @@
 ## TODO
 
 1. Fix all todo
+1. 添加 Snap 功能，可以让 Scroll View 滚动到一个 Cell 完整显示时吸附住
